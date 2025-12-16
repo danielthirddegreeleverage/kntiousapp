@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { useIOSSetup } from "@/hooks/useIOSSetup";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Contacts from "./pages/Contacts";
@@ -16,10 +18,18 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// iOS Setup Component
+const IOSInitializer = () => {
+  useIOSSetup();
+  usePushNotifications();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <IOSInitializer />
         <Toaster />
         <Sonner />
         <BrowserRouter>
