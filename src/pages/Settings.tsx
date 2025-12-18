@@ -9,7 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, MessageSquare, Calendar, Users, Check, ExternalLink, Plus, Trash2, Tag, Loader2, Calculator, Shuffle, SortAsc, Share2, Linkedin, Twitter, Youtube, Facebook, Instagram, Github, MessageCircle, Send, Camera, Hash, Download, Lock } from 'lucide-react';
+import { RefreshCw, MessageSquare, Calendar, Users, Check, ExternalLink, Plus, Trash2, Tag, Loader2, Calculator, Shuffle, SortAsc, Share2, Linkedin, Twitter, Youtube, Facebook, Instagram, Github, MessageCircle, Send, Camera, Hash, Download, Lock, Bell } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { useCategorySettings } from '@/hooks/useCategorySettings';
 import { useAppSettings } from '@/hooks/useAppSettings';
@@ -43,6 +45,7 @@ const Settings = () => {
   const { contacts } = useContacts();
   const { features, tier, isTrialActive, daysLeftInTrial } = useSubscription();
   const { exportContactHistory } = useContactHistory();
+  const { token } = usePushNotifications();
   
   const [isSyncing, setIsSyncing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -147,6 +150,45 @@ const Settings = () => {
             <Badge variant="secondary" className="gap-1">Trial: {daysLeftInTrial} days left</Badge>
           )}
         </div>
+
+        {/* Push Notifications */}
+        <Card className="p-6 animate-fade-in">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Bell className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 space-y-4">
+              <div>
+                <h3 className="font-semibold">Push Notifications</h3>
+                <p className="text-sm text-muted-foreground">
+                  Get reminded when it's time to reach out to your contacts
+                </p>
+              </div>
+              {token ? (
+                <div className="flex items-center gap-2 text-success">
+                  <Check className="w-4 h-4" />
+                  <span className="text-sm font-medium">Notifications Enabled</span>
+                </div>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    disabled={!Capacitor.isNativePlatform()}
+                    className="gap-2"
+                  >
+                    <Bell className="w-4 h-4" />
+                    Enable Notifications
+                  </Button>
+                  {!Capacitor.isNativePlatform() && (
+                    <p className="text-xs text-muted-foreground">
+                      Push notifications are only available in the iOS app
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </Card>
 
         {/* Export History - Business only */}
         <Card className="p-6 animate-fade-in">
