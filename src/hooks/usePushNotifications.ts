@@ -1,63 +1,84 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
+import type { PluginListenerHandle } from '@capacitor/core';
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 
 export const usePushNotifications = () => {
   const [token, setToken] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<PushNotificationSchema[]>([]);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const listenersRef = useRef<PluginListenerHandle[]>([]);
+  const isSetup = useRef(false);
 
+  // Setup listeners only once - but don't auto-register
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
+    if (!Capacitor.isNativePlatform() || isSetup.current) {
       return;
     }
+    isSetup.current = true;
 
-    const registerNotifications = async () => {
+    const setupListeners = async () => {
       try {
-        let permStatus = await PushNotifications.checkPermissions();
+        const registrationListener = await PushNotifications.addListener('registration', (token: Token) => {
+          console.log('Push registration success, token:', token.value);
+          setToken(token.value);
+          setIsRegistering(false);
+        });
+        listenersRef.current.push(registrationListener);
 
-        if (permStatus.receive === 'prompt') {
-          permStatus = await PushNotifications.requestPermissions();
-        }
+        const errorListener = await PushNotifications.addListener('registrationError', (error) => {
+          console.error('Push registration error:', error);
+          setIsRegistering(false);
+        });
+        listenersRef.current.push(errorListener);
 
-        if (permStatus.receive !== 'granted') {
-          console.log('Push notification permission not granted');
-          return;
-        }
+        const receivedListener = await PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+          console.log('Push notification received:', notification);
+          setNotifications(prev => [...prev, notification]);
+        });
+        listenersRef.current.push(receivedListener);
 
-        await PushNotifications.register();
+        const actionListener = await PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+          console.log('Push notification action performed:', action);
+        });
+        listenersRef.current.push(actionListener);
       } catch (error) {
-        console.error('Error registering push notifications:', error);
+        console.error('Error setting up push notification listeners:', error);
       }
     };
 
-    // Listen for registration success
-    PushNotifications.addListener('registration', (token: Token) => {
-      console.log('Push registration success, token:', token.value);
-      setToken(token.value);
-    });
-
-    // Listen for registration errors
-    PushNotifications.addListener('registrationError', (error) => {
-      console.error('Push registration error:', error);
-    });
-
-    // Listen for incoming notifications
-    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-      console.log('Push notification received:', notification);
-      setNotifications(prev => [...prev, notification]);
-    });
-
-    // Listen for notification actions
-    PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
-      console.log('Push notification action performed:', action);
-    });
-
-    registerNotifications();
+    setupListeners();
 
     return () => {
-      PushNotifications.removeAllListeners();
+      listenersRef.current.forEach(listener => listener.remove());
+      listenersRef.current = [];
+      isSetup.current = false;
     };
   }, []);
 
-  return { token, notifications };
+  // Manual registration function - only called on button click
+  const requestPermission = useCallback(async () => {
+    if (!Capacitor.isNativePlatform() || isRegistering) return;
+    
+    setIsRegistering(true);
+    try {
+      let permStatus = await PushNotifications.checkPermissions();
+      
+      if (permStatus.receive === 'prompt') {
+        permStatus = await PushNotifications.requestPermissions();
+      }
+      
+      if (permStatus.receive === 'granted') {
+        await PushNotifications.register();
+      } else {
+        console.log('Push notification permission not granted');
+        setIsRegistering(false);
+      }
+    } catch (error) {
+      console.error('Error registering push notifications:', error);
+      setIsRegistering(false);
+    }
+  }, [isRegistering]);
+
+  return { token, notifications, requestPermission, isRegistering };
 };
