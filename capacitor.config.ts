@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.4d5b5815528a43099e03ead2012f475e',
-  appName: 'A Lovable project',
+  appId: 'app.keepintouch.crm',
+  appName: 'Keep In Touch',
   webDir: 'dist',
   server: {
     url: 'https://4d5b5815-528a-4309-9e03-ead2012f475e.lovableproject.com?forceHideBadge=true',
@@ -17,9 +17,7 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: '#1a1a2e',
-      androidSplashResourceName: 'splash',
-      androidScaleType: 'CENTER_CROP',
+      backgroundColor: '#1A1A2E',
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true
@@ -33,7 +31,7 @@ const config: CapacitorConfig = {
     },
     StatusBar: {
       style: 'dark',
-      backgroundColor: '#1a1a2e'
+      backgroundColor: '#1A1A2E'
     }
   }
 };

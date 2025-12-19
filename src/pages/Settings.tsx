@@ -45,7 +45,7 @@ const Settings = () => {
   const { contacts } = useContacts();
   const { features, tier, isTrialActive, daysLeftInTrial } = useSubscription();
   const { exportContactHistory } = useContactHistory();
-  const { token } = usePushNotifications();
+  const { token, requestPermission, isRegistering } = usePushNotifications();
   
   const [isSyncing, setIsSyncing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -173,11 +173,12 @@ const Settings = () => {
                 <>
                   <Button 
                     variant="outline" 
-                    disabled={!Capacitor.isNativePlatform()}
+                    onClick={requestPermission}
+                    disabled={!Capacitor.isNativePlatform() || isRegistering}
                     className="gap-2"
                   >
-                    <Bell className="w-4 h-4" />
-                    Enable Notifications
+                    {isRegistering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
+                    {isRegistering ? 'Enabling...' : 'Enable Notifications'}
                   </Button>
                   {!Capacitor.isNativePlatform() && (
                     <p className="text-xs text-muted-foreground">
