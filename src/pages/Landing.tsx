@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Users, Calendar, CheckCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { Capacitor } from '@capacitor/core';
 import heroImage from '@/assets/hero-professional-texting.jpg';
 import professionalsImage from '@/assets/professionals-connecting.jpg';
 import mobileImage from '@/assets/professional-mobile.jpg';
@@ -10,6 +12,17 @@ const Landing = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
+  // On native mobile app, skip landing page and go directly to dashboard/auth
+  useEffect(() => {
+    if (Capacitor.isNativePlatform() && !isLoading) {
+      if (user) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/auth', { replace: true });
+      }
+    }
+  }, [user, isLoading, navigate]);
+
   const handleGetStarted = () => {
     if (user) {
       navigate('/dashboard');
@@ -17,6 +30,12 @@ const Landing = () => {
       navigate('/auth');
     }
   };
+
+  // Show nothing while redirecting on native
+  if (Capacitor.isNativePlatform()) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}

@@ -27,10 +27,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
-        <IOSInitializer />
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <IOSInitializer />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/dashboard" element={<Index />} />
