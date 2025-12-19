@@ -1,42 +1,46 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { Keyboard } from '@capacitor/keyboard';
-import { SplashScreen } from '@capacitor/splash-screen';
 
 export const useIOSSetup = () => {
   useEffect(() => {
+    // Only run on native platforms
     if (!Capacitor.isNativePlatform()) {
       return;
     }
 
     const setupIOS = async () => {
+      // Hide splash screen
       try {
-        // Hide splash screen after app is ready
+        const { SplashScreen } = await import('@capacitor/splash-screen');
         await SplashScreen.hide();
+      } catch (error) {
+        console.warn('SplashScreen not available:', error);
+      }
 
-        // Configure status bar
+      // Configure status bar for iOS
+      try {
         if (Capacitor.getPlatform() === 'ios') {
+          const { StatusBar, Style } = await import('@capacitor/status-bar');
           await StatusBar.setStyle({ style: Style.Dark });
         }
+      } catch (error) {
+        console.warn('StatusBar not available:', error);
+      }
 
-        // Setup keyboard listeners
-        Keyboard.addListener('keyboardWillShow', (info) => {
+      // Setup keyboard listeners
+      try {
+        const { Keyboard } = await import('@capacitor/keyboard');
+        await Keyboard.addListener('keyboardWillShow', (info) => {
           document.body.style.setProperty('--keyboard-height', `${info.keyboardHeight}px`);
         });
-
-        Keyboard.addListener('keyboardWillHide', () => {
+        await Keyboard.addListener('keyboardWillHide', () => {
           document.body.style.setProperty('--keyboard-height', '0px');
         });
       } catch (error) {
-        console.error('Error setting up iOS:', error);
+        console.warn('Keyboard not available:', error);
       }
     };
 
     setupIOS();
-
-    return () => {
-      Keyboard.removeAllListeners();
-    };
   }, []);
 };
