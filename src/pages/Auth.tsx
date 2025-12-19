@@ -77,13 +77,13 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen overflow-auto bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 p-4 flex justify-end">
         <ThemeToggle />
       </header>
 
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16">
+      <div className="min-h-screen flex flex-col items-center px-4 py-20 pt-24">
         {/* Hero */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
